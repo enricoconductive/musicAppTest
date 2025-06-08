@@ -1,0 +1,19 @@
+body, html {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    display: flex;
+    flex-direction: row;
+  }
+  
+  .zone {
+    flex: 1;
+    height: 100vh;
+    touch-action: manipulation;
+  }
+  
+  .red    { background-color: red; }
+  .orange { background-color: orange; }
+  .yellow { background-color: yellow; }
+  .green  { background-color: green; }
+  
