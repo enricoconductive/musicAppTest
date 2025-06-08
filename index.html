@@ -1,21 +1,90 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>musicAppTest</title>
-  <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Music App Test</title>
   <script src="https://unpkg.com/tone@latest/build/Tone.js"></script>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      width: 100%;
+      overflow: hidden;
+      font-family: sans-serif;
+    }
+
+    #startButton {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 10;
+      padding: 14px 24px;
+      font-size: 18px;
+      background-color: white;
+      border: 2px solid black;
+      cursor: pointer;
+    }
+
+    .container {
+      display: none;
+      height: 100%;
+      width: 100%;
+      display: flex;
+    }
+
+    .zone {
+      flex: 1;
+      touch-action: manipulation;
+    }
+
+    .red    { background-color: red; }
+    .orange { background-color: orange; }
+    .yellow { background-color: yellow; }
+    .green  { background-color: green; }
+  </style>
 </head>
 <body>
-    <button id="startButton">Start</button>
-    <div class="container">
-      <div class="zone red" data-note="C4"></div>
-      <div class="zone orange" data-note="D4"></div>
-      <div class="zone yellow" data-note="E4"></div>
-      <div class="zone green" data-note="F4"></div>
-    </div>
-    <script src="script.js"></script>
-  </body>
-  
+  <button id="startButton">Start</button>
+  <div class="container" id="zoneContainer">
+    <div class="zone red" data-note="C4"></div>
+    <div class="zone orange" data-note="D4"></div>
+    <div class="zone yellow" data-note="E4"></div>
+    <div class="zone green" data-note="F4"></div>
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      let synth;
+      let started = false;
+
+      const startBtn = document.getElementById('startButton');
+      const zoneContainer = document.getElementById('zoneContainer');
+
+      startBtn.addEventListener('click', async () => {
+        if (started) return;
+        await Tone.start();
+        synth = new Tone.Synth().toDestination();
+        started = true;
+
+        synth.triggerAttackRelease("C4", "8n"); // confirmation note
+
+        startBtn.style.display = 'none';
+        zoneContainer.style.display = 'flex';
+
+        document.querySelectorAll('.zone').forEach(zone => {
+          const note = zone.getAttribute('data-note');
+          const play = () => synth.triggerAttackRelease(note, "8n");
+          zone.addEventListener('click', play);
+          zone.addEventListener('touchstart', e => {
+            e.preventDefault();
+            play();
+          });
+        });
+      });
+    });
+  </script>
+</body>
 </html>
