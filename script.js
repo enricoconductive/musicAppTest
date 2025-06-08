@@ -11,6 +11,9 @@ document.addEventListener("DOMContentLoaded", () => {
       synth = new Tone.Synth().toDestination();
       started = true;
   
+      // Play a short confirmation note to wake up iOS audio
+      synth.triggerAttackRelease("C4", "8n");
+  
       startBtn.style.display = 'none';
   
       document.querySelectorAll('.zone').forEach(zone => {
