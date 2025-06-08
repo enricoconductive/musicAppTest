@@ -61,6 +61,12 @@
 
 <script>
   document.addEventListener("DOMContentLoaded", () => {
+    document.body.addEventListener('touchstart', () => {
+  if (audioCtx && audioCtx.state === 'suspended') {
+    audioCtx.resume();
+  }
+}, { once: true });
+
     const AudioContext = window.AudioContext || window.webkitAudioContext;
     let audioCtx;
     let oscillators = {};
@@ -99,7 +105,11 @@
     }
 
     startBtn.addEventListener('click', () => {
-      audioCtx = new AudioContext();
+        audioCtx = new AudioContext();
+if (audioCtx.state === 'suspended') {
+  audioCtx.resume();
+}
+
       startBtn.style.display = 'none';
       noteGrid.style.display = 'grid';
     });
