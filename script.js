@@ -30,8 +30,25 @@ document.addEventListener("DOMContentLoaded", () => {
         alert("Audio could not be started. Please try tapping again.");
         console.error(e);
       }
-      
-  
+            
+      document.querySelectorAll('.square').forEach(square => {
+        const note = square.getAttribute('data-note');
+    
+        square.addEventListener('touchstart', (e) => {
+          e.preventDefault();
+          synth.triggerAttack(note);
+        });
+    
+        square.addEventListener('touchend', (e) => {
+          e.preventDefault();
+          synth.triggerRelease(note);
+        });
+    
+        square.addEventListener('touchcancel', (e) => {
+          e.preventDefault();
+          synth.triggerRelease(note);
+        });
+      });
       // Link notes to DOM elements
       document.querySelectorAll('.square').forEach(square => {
         const note = square.getAttribute('data-note');
