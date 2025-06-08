@@ -1,37 +1,65 @@
 document.addEventListener("DOMContentLoaded", () => {
-    let synth;
-    let started = false;
-  
     const startBtn = document.getElementById('startButton');
+    const noteGrid = document.getElementById('noteGrid');
+    let synth;
+    let activeKeys = {};
+  
+    const keyMap = {
+      a: "C4",
+      s: "D4",
+      d: "E4",
+      f: "F4"
+    };
+  
+    const noteToElement = {};
   
     startBtn.addEventListener('click', async () => {
-      if (started) return;
-  
       await Tone.start();
-      synth = new Tone.Synth().toDestination();
-      started = true;
-  
-      // Play a short confirmation note to confirm audio is working
-      synth.triggerAttackRelease("C4", "8n");
-  
+      synth = new Tone.PolySynth(Tone.Synth).toDestination();
       startBtn.style.display = 'none';
+      noteGrid.style.display = 'grid';
   
-      // Add both touch and mouse event listeners
-      document.querySelectorAll('.zone').forEach(zone => {
-        const playNote = () => {
-          const note = zone.getAttribute('data-note');
-          synth.triggerAttackRelease(note, "8n");
-        };
+      // Link notes to DOM elements
+      document.querySelectorAll('.square').forEach(square => {
+        const note = square.getAttribute('data-note');
+        noteToElement[note] = square;
   
-        zone.addEventListener('touchstart', e => {
-          e.preventDefault();
-          playNote();
+        // Mouse control
+        square.addEventListener('mousedown', () => {
+          synth.triggerAttack(note);
+          square.classList.add('active');
         });
   
-        zone.addEventListener('click', e => {
-          e.preventDefault();
-          playNote();
+        square.addEventListener('mouseup', () => {
+          synth.triggerRelease(note);
+          square.classList.remove('active');
         });
+  
+        square.addEventListener('mouseleave', () => {
+          synth.triggerRelease(note);
+          square.classList.remove('active');
+        });
+      });
+  
+      // Keyboard control
+      document.addEventListener('keydown', (e) => {
+        const key = e.key.toLowerCase();
+        const note = keyMap[key];
+        if (note && !activeKeys[key]) {
+          synth.triggerAttack(note);
+          noteToElement[note]?.classList.add('active');
+          activeKeys[key] = true;
+        }
+      });
+  
+      document.addEventListener('keyup', (e) => {
+        const key = e.key.toLowerCase();
+        const note = keyMap[key];
+        if (note && activeKeys[key]) {
+          synth.triggerRelease(note);
+          noteToElement[note]?.classList.remove('active');
+          activeKeys[key] = false;
+        }
       });
     });
   });
