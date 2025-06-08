@@ -1,4 +1,7 @@
 document.addEventListener("DOMContentLoaded", () => {
+    document.body.addEventListener('touchstart', () => {
+        Tone.start();
+      }, { once: true });      
     const startBtn = document.getElementById('startButton');
     const noteGrid = document.getElementById('noteGrid');
     let synth;
@@ -21,6 +24,7 @@ document.addEventListener("DOMContentLoaded", () => {
     startBtn.addEventListener('click', async () => {
       try {
         await Tone.start();
+        console.log("Tone.js started via button tap");
         synth = new Tone.PolySynth(Tone.Synth).toDestination();
         console.log('Audio context started');
   
