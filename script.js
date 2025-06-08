@@ -1,9 +1,13 @@
-const synth = new Tone.Synth().toDestination();
+let synth;
+document.getElementById('startButton').addEventListener('click', async () => {
+  await Tone.start();
+  synth = new Tone.Synth().toDestination();
+  document.getElementById('startButton').style.display = 'none';
+});
 
 document.querySelectorAll('.zone').forEach(zone => {
-  zone.addEventListener('touchstart', async (e) => {
-    e.preventDefault();
-    await Tone.start(); // Required on iOS
+  zone.addEventListener('touchstart', e => {
+    if (!synth) return;
     const note = zone.getAttribute('data-note');
     synth.triggerAttackRelease(note, "8n");
   });
