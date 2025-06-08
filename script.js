@@ -13,11 +13,24 @@ document.addEventListener("DOMContentLoaded", () => {
   
     const noteToElement = {};
   
+    // ✅ Add this fallback listener for iPad
+    document.body.addEventListener('touchstart', () => {
+      Tone.start();
+    }, { once: true });
+  
     startBtn.addEventListener('click', async () => {
-      await Tone.start();
-      synth = new Tone.PolySynth(Tone.Synth).toDestination();
-      startBtn.style.display = 'none';
-      noteGrid.style.display = 'grid';
+      try {
+        await Tone.start();
+        synth = new Tone.PolySynth(Tone.Synth).toDestination();
+        console.log('Audio context started');
+  
+        startBtn.style.display = 'none';
+        noteGrid.style.display = 'grid';
+      } catch (e) {
+        alert("Audio could not be started. Please try tapping again.");
+        console.error(e);
+      }
+      
   
       // Link notes to DOM elements
       document.querySelectorAll('.square').forEach(square => {
