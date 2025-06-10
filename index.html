@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Neumorphic Piano</title>
+  <title>Neumorphic Piano C–A</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
@@ -12,13 +12,41 @@
     <button id="startButton">Start</button>
   </div>
 
+  <!-- Instrument Selector -->
+  <div id="instrumentSelector">
+  <label for="instrument">Instrument:</label>
+  <select id="instrument">
+    <option value="piano">Piano</option>
+    <option value="guitar">Guitar</option>
+    <option value="harp">Harp</option>
+    <option value="flute">Flute</option>
+  </select>
+</div>
+
+  <!-- Octave Control -->
+<div class="octave-controls" id="octaveControls" style="display: none;">
+  <button id="octaveDown">−</button>
+  <span id="octaveDisplay">4</span>
+  <button id="octaveUp">+</button>
+</div>
+
+
   <div class="piano-container" id="noteGrid" style="display:none;">
     <div class="white-key" data-note="C4" data-key="a">C</div>
     <div class="white-key" data-note="D4" data-key="s">D</div>
     <div class="white-key" data-note="E4" data-key="d">E</div>
     <div class="white-key" data-note="F4" data-key="f">F</div>
     <div class="white-key" data-note="G4" data-key="g">G</div>
+    <div class="white-key" data-note="A4" data-key="h">A</div>
   </div>
+
+  <!-- Octave controls -->
+<div class="octave-controls" id="octaveControls" style="display:none;">
+  <button id="octaveDown">−</button>
+  <div id="octaveDisplay">4</div>
+  <button id="octaveUp">+</button>
+</div>
+
 
   <script src="script.js"></script>
   <script src="https://unpkg.com/tone@latest/build/Tone.js"></script>

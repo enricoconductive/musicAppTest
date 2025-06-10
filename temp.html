@@ -1,22 +1,181 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Music App Test</title>
-  <link rel="stylesheet" href="style.css" />
-  <script src="https://unpkg.com/tone@latest/build/Tone.js"></script>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Web Audio Polyphonic Test</title>
+<style>
+  html, body {
+    margin: 0; padding: 0; height: 100%; width: 100%;
+    font-family: sans-serif;
+    overflow: hidden;
+    background: #f4f4f4;
+  }
+  #startButton {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    padding: 20px 40px;
+    font-size: 24px;
+    background: linear-gradient(135deg, #4CAF50, #2E7D32);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    z-index: 10;
+  }
+  .grid {
+    display: none;
+    height: 100vh; width: 100vw;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+  }
+  .square {
+    display: flex; align-items: center; justify-content: center;
+    font-size: 32px; font-weight: bold; color: white;
+    user-select: none; cursor: pointer; touch-action: manipulation;
+  }
+  .red { background-color: red; }
+  .orange { background-color: orange; }
+  .yellow { background-color: gold; }
+  .green { background-color: green; }
+  .square.active {
+    transform: scale(1.05);
+    box-shadow: 0 0 15px rgba(255,255,255,0.8);
+    transition: transform 0.1s ease, box-shadow 0.1s ease;
+  }
+</style>
 </head>
 <body>
-  <button id="startButton">Start</button>
 
-  <div class="grid" id="noteGrid">
-    <div class="square red" data-note="C4">C</div>
-    <div class="square orange" data-note="D4">D</div>
-    <div class="square yellow" data-note="E4">E</div>
-    <div class="square green" data-note="F4">F</div>
-  </div>
+<button id="startButton">Start</button>
 
-  <script src="script.js"></script>
+<div class="grid" id="noteGrid">
+  <div class="square red" data-note="261.63">C</div>
+  <div class="square orange" data-note="293.66">D</div>
+  <div class="square yellow" data-note="329.63">E</div>
+  <div class="square green" data-note="349.23">F</div>
+</div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    document.body.addEventListener('touchstart', () => {
+  if (audioCtx && audioCtx.state === 'suspended') {
+    audioCtx.resume();
+  }
+}, { once: true });
+
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    let audioCtx;
+    let oscillators = {};
+    const startBtn = document.getElementById('startButton');
+    const noteGrid = document.getElementById('noteGrid');
+    const activeKeys = {};
+    const keyMap = {
+      a: "261.63", // C4
+      s: "293.66", // D4
+      d: "329.63", // E4
+      f: "349.23"  // F4
+    };
+
+    function startOscillator(freq) {
+      if (oscillators[freq]) return; // already playing
+      const osc = audioCtx.createOscillator();
+      const gainNode = audioCtx.createGain();
+      gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
+      osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+      osc.type = 'sine';
+      osc.connect(gainNode).connect(audioCtx.destination);
+      osc.start();
+      oscillators[freq] = { osc, gainNode };
+    }
+
+    function stopOscillator(freq) {
+      if (!oscillators[freq]) return;
+      const { osc, gainNode } = oscillators[freq];
+      gainNode.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.03);
+      setTimeout(() => {
+        osc.stop();
+        osc.disconnect();
+        gainNode.disconnect();
+        delete oscillators[freq];
+      }, 50);
+    }
+
+    startBtn.addEventListener('click', () => {
+        audioCtx = new AudioContext();
+if (audioCtx.state === 'suspended') {
+  audioCtx.resume();
+}
+
+      startBtn.style.display = 'none';
+      noteGrid.style.display = 'grid';
+    });
+
+    // Mouse and touch
+    noteGrid.querySelectorAll('.square').forEach(square => {
+      const freq = square.getAttribute('data-note');
+
+      square.addEventListener('mousedown', () => {
+        startOscillator(freq);
+        square.classList.add('active');
+      });
+
+      square.addEventListener('mouseup', () => {
+        stopOscillator(freq);
+        square.classList.remove('active');
+      });
+
+      square.addEventListener('mouseleave', () => {
+        stopOscillator(freq);
+        square.classList.remove('active');
+      });
+
+      square.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        startOscillator(freq);
+        square.classList.add('active');
+      }, { passive: false });
+
+      square.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        stopOscillator(freq);
+        square.classList.remove('active');
+      }, { passive: false });
+
+      square.addEventListener('touchcancel', (e) => {
+        e.preventDefault();
+        stopOscillator(freq);
+        square.classList.remove('active');
+      }, { passive: false });
+    });
+
+    // Keyboard
+    document.addEventListener('keydown', (e) => {
+      const key = e.key.toLowerCase();
+      const freq = keyMap[key];
+      if (freq && !activeKeys[key]) {
+        startOscillator(freq);
+        activeKeys[key] = true;
+        const square = Array.from(noteGrid.children).find(s => s.getAttribute('data-note') === freq);
+        if (square) square.classList.add('active');
+      }
+    });
+
+    document.addEventListener('keyup', (e) => {
+      const key = e.key.toLowerCase();
+      const freq = keyMap[key];
+      if (freq && activeKeys[key]) {
+        stopOscillator(freq);
+        activeKeys[key] = false;
+        const square = Array.from(noteGrid.children).find(s => s.getAttribute('data-note') === freq);
+        if (square) square.classList.remove('active');
+      }
+    });
+  });
+</script>
+
 </body>
 </html>
