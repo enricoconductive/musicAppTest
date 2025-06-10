@@ -1,100 +1,89 @@
 document.addEventListener("DOMContentLoaded", () => {
-    document.body.addEventListener('touchstart', () => {
-        Tone.start();
-      }, { once: true });      
-    const startBtn = document.getElementById('startButton');
-    const noteGrid = document.getElementById('noteGrid');
-    let synth;
-    let activeKeys = {};
-  
+  const startBtn = document.getElementById('startButton');
+  const overlay = document.getElementById('overlay');
+  const noteGrid = document.getElementById('noteGrid');
+  let synth;
+  let activeKeys = {};
+
+  startBtn.addEventListener('click', async () => {
+    await Tone.start();
+    synth = new Tone.PolySynth(Tone.Synth).toDestination();
+
+    overlay.style.display = 'none';
+    noteGrid.style.display = 'flex';
+
+    document.querySelectorAll('.white-key').forEach(key => {
+      const note = key.getAttribute('data-note');
+
+      // Mouse/touch start
+      key.addEventListener('mousedown', () => {
+        synth.triggerAttack(note);
+        key.classList.add('active');
+      });
+
+      key.addEventListener('mouseup', () => {
+        synth.triggerRelease(note);
+        key.classList.remove('active');
+      });
+
+      key.addEventListener('mouseleave', () => {
+        synth.triggerRelease(note);
+        key.classList.remove('active');
+      });
+
+      key.addEventListener('touchstart', e => {
+        e.preventDefault();
+        synth.triggerAttack(note);
+        key.classList.add('active');
+      }, { passive: false });
+
+      key.addEventListener('touchend', e => {
+        e.preventDefault();
+        synth.triggerRelease(note);
+        key.classList.remove('active');
+      }, { passive: false });
+
+      key.addEventListener('touchcancel', e => {
+        e.preventDefault();
+        synth.triggerRelease(note);
+        key.classList.remove('active');
+      }, { passive: false });
+    });
+
+    // Keyboard support
     const keyMap = {
       a: "C4",
       s: "D4",
       d: "E4",
-      f: "F4"
+      f: "F4",
+      g: "G4",
+      ArrowLeft: "C4",
+      ArrowUp: "D4",
+      ArrowRight: "E4",
+      ArrowDown: "F4",
+      ' ': "G4"  // Spacebar
     };
-  
-    const noteToElement = {};
-  
-    // ✅ Add this fallback listener for iPad
-    document.body.addEventListener('touchstart', () => {
-      Tone.start();
-    }, { once: true });
-  
-    startBtn.addEventListener('click', async () => {
-      try {
-        await Tone.start();
-        console.log("Tone.js started via button tap");
-        synth = new Tone.PolySynth(Tone.Synth).toDestination();
-        console.log('Audio context started');
-  
-        startBtn.style.display = 'none';
-        noteGrid.style.display = 'grid';
-      } catch (e) {
-        alert("Audio could not be started. Please try tapping again.");
-        console.error(e);
+
+    document.addEventListener('keydown', e => {
+      const key = e.key;
+      if (!activeKeys[key] && keyMap[key]) {
+        synth.triggerAttack(keyMap[key]);
+        activeKeys[key] = true;
+        const keyDiv = [...document.querySelectorAll('.white-key')]
+          .find(k => k.getAttribute('data-note') === keyMap[key]);
+        if (keyDiv) keyDiv.classList.add('active');
       }
-            
-      document.querySelectorAll('.square').forEach(square => {
-        const note = square.getAttribute('data-note');
-    
-        square.addEventListener('touchstart', (e) => {
-          e.preventDefault();
-          synth.triggerAttack(note);
-        });
-    
-        square.addEventListener('touchend', (e) => {
-          e.preventDefault();
-          synth.triggerRelease(note);
-        });
-    
-        square.addEventListener('touchcancel', (e) => {
-          e.preventDefault();
-          synth.triggerRelease(note);
-        });
-      });
-      // Link notes to DOM elements
-      document.querySelectorAll('.square').forEach(square => {
-        const note = square.getAttribute('data-note');
-        noteToElement[note] = square;
-  
-        // Mouse control
-        square.addEventListener('mousedown', () => {
-          synth.triggerAttack(note);
-          square.classList.add('active');
-        });
-  
-        square.addEventListener('mouseup', () => {
-          synth.triggerRelease(note);
-          square.classList.remove('active');
-        });
-  
-        square.addEventListener('mouseleave', () => {
-          synth.triggerRelease(note);
-          square.classList.remove('active');
-        });
-      });
-  
-      // Keyboard control
-      document.addEventListener('keydown', (e) => {
-        const key = e.key.toLowerCase();
-        const note = keyMap[key];
-        if (note && !activeKeys[key]) {
-          synth.triggerAttack(note);
-          noteToElement[note]?.classList.add('active');
-          activeKeys[key] = true;
-        }
-      });
-  
-      document.addEventListener('keyup', (e) => {
-        const key = e.key.toLowerCase();
-        const note = keyMap[key];
-        if (note && activeKeys[key]) {
-          synth.triggerRelease(note);
-          noteToElement[note]?.classList.remove('active');
-          activeKeys[key] = false;
-        }
-      });
+    });
+
+    document.addEventListener('keyup', e => {
+      const key = e.key;
+      if (activeKeys[key] && keyMap[key]) {
+        synth.triggerRelease(keyMap[key]);
+        activeKeys[key] = false;
+        const keyDiv = [...document.querySelectorAll('.white-key')]
+          .find(k => k.getAttribute('data-note') === keyMap[key]);
+        if (keyDiv) keyDiv.classList.remove('active');
+      }
     });
   });
-  
+});
