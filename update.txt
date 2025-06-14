@@ -1,1 +1,6 @@
+Commit to GitHub
+
 cd "/Users/enricobertelli/Documents/CM receipts/CM_GitHub/musicAppTest" && git add . && git commit -m "Update latest version" && git push origin main
+
+Link
+https://enricoconductive.github.io/musicAppTest/
