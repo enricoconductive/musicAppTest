@@ -1,0 +1,1 @@
+cd "/Users/enricobertelli/Documents/CM receipts/CM_GitHub/musicAppTest" && git add . && git commit -m "Update latest version" && git push origin main
